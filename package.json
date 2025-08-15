@@ -4,8 +4,11 @@
   "description": "An open source way to view rowing conditions in a specific area based on wind, gusts and tide",
   "main": "index.html",
   "scripts": {
-    "start": "python -m http.server 8000",
-    "dev": "python -m http.server 8000"
+    "start": "python manage.py runserver",
+    "dev": "python manage.py runserver",
+    "migrate": "python manage.py migrate",
+    "makemigrations": "python manage.py makemigrations",
+    "createsuperuser": "python manage.py createsuperuser"
   },
   "keywords": ["rowing", "weather", "tides", "map", "outdoor-sports"],
   "author": "Nikolai Koenig",
