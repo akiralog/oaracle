@@ -177,10 +177,14 @@ class OaracleApp {
         this.showLoading();
 
         try {
+            // Round coordinates to 6 decimal places to avoid validation issues
+            const roundedLat = Math.round(this.selectedLocation.lat * 1000000) / 1000000;
+            const roundedLng = Math.round(this.selectedLocation.lng * 1000000) / 1000000;
+            
             console.log('Sending request to:', '/api/conditions/');
             console.log('Request data:', {
-                latitude: this.selectedLocation.lat,
-                longitude: this.selectedLocation.lng,
+                latitude: roundedLat,
+                longitude: roundedLng,
                 include_weather: true,
                 include_water: true,
                 include_forecast: true,
@@ -194,8 +198,8 @@ class OaracleApp {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    latitude: this.selectedLocation.lat,
-                    longitude: this.selectedLocation.lng,
+                    latitude: roundedLat,
+                    longitude: roundedLng,
                     include_weather: true,
                     include_water: true,
                     include_forecast: true,
