@@ -177,6 +177,16 @@ class OaracleApp {
         this.showLoading();
 
         try {
+            console.log('Sending request to:', '/api/conditions/');
+            console.log('Request data:', {
+                latitude: this.selectedLocation.lat,
+                longitude: this.selectedLocation.lng,
+                include_weather: true,
+                include_water: true,
+                include_forecast: true,
+                days_ahead: 7
+            });
+            
             // Call our Django backend API
             const response = await fetch('/api/conditions/', {
                 method: 'POST',
@@ -193,18 +203,25 @@ class OaracleApp {
                 })
             });
             
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorText = await response.text();
+                console.error('Response error text:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
             }
             
             const data = await response.json();
+            console.log('Response data:', data);
+            
             this.hideLoading();
             this.showConditionsResult(data);
             
         } catch (error) {
             console.error('Error fetching conditions:', error);
             this.hideLoading();
-            this.showError('Failed to fetch rowing conditions. Please try again.');
+            this.showError(`Failed to fetch rowing conditions: ${error.message}`);
         }
     }
 
@@ -226,6 +243,8 @@ class OaracleApp {
         // Hide the location panel and show results
         this.hideLocationPanel();
         this.showResultsPanel();
+        
+        console.log('Received data:', data); // Debug log
         
         // Update location info
         const resultsLocation = document.getElementById('results-location');
