@@ -45,6 +45,13 @@ class OaracleApp {
                 this.getRowingConditions();
             });
         }
+
+        const closeResultsBtn = document.getElementById('close-results');
+        if (closeResultsBtn) {
+            closeResultsBtn.addEventListener('click', () => {
+                this.hideResultsPanel();
+            });
+        }
     }
 
     showInstructions() {
@@ -97,6 +104,20 @@ class OaracleApp {
         const locationPanel = document.getElementById('location-panel');
         if (locationPanel) {
             locationPanel.classList.add('hidden');
+        }
+    }
+
+    showResultsPanel() {
+        const resultsPanel = document.getElementById('results-panel');
+        if (resultsPanel) {
+            resultsPanel.classList.remove('hidden');
+        }
+    }
+
+    hideResultsPanel() {
+        const resultsPanel = document.getElementById('results-panel');
+        if (resultsPanel) {
+            resultsPanel.classList.add('hidden');
         }
     }
 
@@ -202,25 +223,63 @@ class OaracleApp {
     }
 
     showConditionsResult(data) {
-        // Display the conditions data
-        console.log('Conditions data:', data);
+        // Hide the location panel and show results
+        this.hideLocationPanel();
+        this.showResultsPanel();
         
-        // For now, show a basic summary
-        let message = `Location: ${data.location.name}\n`;
-        if (data.current_conditions) {
-            message += `Temperature: ${data.current_conditions.temperature}°C\n`;
-            message += `Wind: ${data.current_conditions.wind_speed} m/s\n`;
-            message += `Weather: ${data.current_conditions.weather_description}`;
+        // Update location info
+        const resultsLocation = document.getElementById('results-location');
+        if (resultsLocation) {
+            resultsLocation.textContent = data.location?.name || 'Selected location';
         }
         
-        if (data.rowability_score) {
-            message += `\n\nRowability Score: ${data.rowability_score.score}/10 (${data.rowability_score.category})`;
-            if (data.rowability_score.recommendations.length > 0) {
-                message += `\n\nRecommendations:\n${data.rowability_score.recommendations.join('\n')}`;
+        // Update wind data
+        if (data.current_conditions?.wind_speed !== undefined) {
+            const windSpeed = document.querySelector('.wind-speed');
+            if (windSpeed) {
+                windSpeed.textContent = `${data.current_conditions.wind_speed} m/s`;
             }
         }
         
-        alert(message);
+        if (data.current_conditions?.wind_direction !== undefined) {
+            const windDirection = document.querySelector('.wind-direction');
+            if (windDirection) {
+                windDirection.textContent = data.current_conditions.wind_direction;
+            }
+        }
+        
+        // Update tide data
+        if (data.water_conditions?.tide_state !== undefined) {
+            const tideState = document.querySelector('.tide-state');
+            if (tideState) {
+                tideState.textContent = data.water_conditions.tide_state;
+            }
+        }
+        
+        if (data.water_conditions?.next_tide_time !== undefined) {
+            const tideTime = document.querySelector('.tide-time');
+            if (tideTime) {
+                tideTime.textContent = data.water_conditions.next_tide_time;
+            }
+        }
+        
+        // Update daylight data
+        if (data.current_conditions?.sunrise !== undefined) {
+            const sunrise = document.querySelector('.sunrise');
+            if (sunrise) {
+                sunrise.textContent = `Sunrise: ${data.current_conditions.sunrise}`;
+            }
+        }
+        
+        if (data.current_conditions?.sunset !== undefined) {
+            const sunset = document.querySelector('.sunset');
+            if (sunset) {
+                sunset.textContent = `Sunset: ${data.current_conditions.sunset}`;
+            }
+        }
+        
+        // Log the full data for debugging
+        console.log('Conditions data:', data);
     }
 
     showError(message) {
