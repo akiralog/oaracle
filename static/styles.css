@@ -22,7 +22,7 @@ body {
     left: 0;
     right: 0;
     z-index: 1000;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
     color: white;
     padding: 1rem 2rem;
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
@@ -88,7 +88,7 @@ body {
 }
 
 .dismiss-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
     color: white;
     border: none;
     padding: 0.75rem 2rem;
@@ -97,12 +97,12 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(255, 140, 66, 0.3);
 }
 
 .dismiss-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(255, 140, 66, 0.4);
 }
 
 .location-panel {
@@ -147,7 +147,7 @@ body {
 }
 
 .primary-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
     color: white;
     border: none;
     padding: 0.875rem 1.5rem;
@@ -157,12 +157,12 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 15px rgba(255, 140, 66, 0.3);
 }
 
 .primary-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 20px rgba(255, 140, 66, 0.4);
 }
 
 .primary-btn:disabled {
@@ -194,7 +194,7 @@ body {
     width: 40px;
     height: 40px;
     border: 3px solid #f3f3f3;
-    border-top: 3px solid #667eea;
+    border-top: 3px solid #ff8c42;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 1rem auto;

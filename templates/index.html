@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oaracle - Rowing Conditions</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Oaracle</h1>
+                <p class="tagline">Find the perfect rowing conditions</p>
+            </div>
+        </header>
+
+        <div id="instructions" class="instructions-overlay">
+            <div class="instructions-content">
+                <div class="pin-icon">📍</div>
+                <h2>Drop a pin where you plan to row</h2>
+                <p>Click anywhere on the map to select your rowing location</p>
+                <button id="dismiss-instructions" class="dismiss-btn">Got it!</button>
+            </div>
+        </div>
+
+        <div id="map" class="map-container"></div>
+
+        <div id="location-panel" class="location-panel hidden">
+            <div class="location-content">
+                <h3>Selected Location</h3>
+                <div id="location-details">
+                    <p id="location-text">Loading location details...</p>
+                </div>
+                <button id="get-conditions" class="primary-btn">Get Rowing Conditions</button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading hidden">
+            <div class="loading-spinner"></div>
+            <p>Fetching weather and water data...</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{% static 'app.js' %}"></script>
+</body>
+</html>
