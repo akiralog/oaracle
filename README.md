@@ -64,7 +64,7 @@ http://localhost:8000
 1. **Select Location**: Click anywhere on the map to drop a pin
 2. **View Details**: See the location context (town, waterway)
 3. **Get Conditions**: Click "Get Rowing Conditions" to fetch weather and water data
-4. **Plan Ahead**: View 7-day forecast with rowability scores 
+4. **Plan Ahead**: View 7-day forecast
 
 ## 🔧 Technology Stack
 
