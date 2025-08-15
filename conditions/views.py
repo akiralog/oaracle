@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.conf import settings
 from datetime import datetime, timedelta
 import requests
 import json
@@ -14,6 +15,72 @@ from .serializers import (
     RowabilityScoreSerializer, ForecastSerializer, LocationDetailSerializer,
     ConditionsRequestSerializer, RowabilityCalculationSerializer
 )
+
+
+def fetch_weather_data(lat, lng):
+    """
+    Fetch weather data from OpenWeatherMap API
+    """
+    try:
+        # Check if API key is configured
+        if not hasattr(settings, 'OPENWEATHERMAP_API_KEY') or settings.OPENWEATHERMAP_API_KEY == 'your_api_key_here':
+            print("Warning: OpenWeatherMap API key not configured, using placeholder data")
+            return None
+        
+        # Fetch current weather
+        current_url = f"{settings.OPENWEATHERMAP_BASE_URL}/weather"
+        params = {
+            'lat': lat,
+            'lon': lng,
+            'appid': settings.OPENWEATHERMAP_API_KEY,
+            'units': 'metric',  # Use Celsius and m/s
+            'lang': 'en'
+        }
+        
+        response = requests.get(current_url, params=params, timeout=10)
+        if response.status_code != 200:
+            print(f"OpenWeatherMap API error: {response.status_code}")
+            return None
+            
+        weather_data = response.json()
+        
+        # Extract relevant data
+        current_conditions = {
+            'temperature': weather_data['main']['temp'],
+            'wind_speed': weather_data['wind']['speed'],
+            'wind_gust': weather_data['wind'].get('gust', 0),
+            'wind_direction': weather_data['wind'].get('deg', 0),
+            'precipitation': weather_data.get('rain', {}).get('1h', 0),
+            'humidity': weather_data['main']['humidity'],
+            'pressure': weather_data['main']['pressure'],
+            'visibility': weather_data.get('visibility', 10000) / 1000,  # Convert to km
+            'weather_description': weather_data['weather'][0]['description'],
+            'icon_code': weather_data['weather'][0]['icon']
+        }
+        
+        # Convert wind direction from degrees to cardinal
+        wind_deg = current_conditions['wind_direction']
+        if wind_deg is not None:
+            directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+                         'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+            current_conditions['wind_direction'] = directions[round(wind_deg / 22.5) % 16]
+        
+        # Get sunrise/sunset times
+        sunrise_timestamp = weather_data['sys']['sunrise']
+        sunset_timestamp = weather_data['sys']['sunset']
+        
+        # Convert to local time 
+        sunrise_time = datetime.fromtimestamp(sunrise_timestamp).strftime('%H:%M')
+        sunset_time = datetime.fromtimestamp(sunset_timestamp).strftime('%H:%M')
+        
+        current_conditions['sunrise'] = sunrise_time
+        current_conditions['sunset'] = sunset_time
+        
+        return current_conditions
+        
+    except Exception as e:
+        print(f"Error fetching weather data: {e}")
+        return None
 
 
 @api_view(['POST'])
@@ -86,19 +153,27 @@ def get_rowing_conditions(request):
     
     # Get current weather conditions (placeholder for now)
     if data['include_weather']:
-        # This will be replaced with actual OpenWeatherMap API call
-        response_data['current_conditions'] = {
-            'temperature': 15.0,
-            'wind_speed': 5.0,
-            'wind_gust': 8.0,
-            'wind_direction': 180,
-            'precipitation': 0.0,
-            'humidity': 65,
-            'pressure': 1013.0,
-            'visibility': 10.0,
-            'weather_description': 'Partly cloudy',
-            'icon_code': '02d'
-        }
+        # Try to fetch real weather data from OpenWeatherMap
+        real_weather = fetch_weather_data(lat, lng)
+        
+        if real_weather:
+            response_data['current_conditions'] = real_weather
+        else:
+            # Fallback to placeholder data if API call fails
+            response_data['current_conditions'] = {
+                'temperature': 15.0,
+                'wind_speed': 5.0,
+                'wind_gust': 8.0,
+                'wind_direction': 'S',
+                'precipitation': 0.0,
+                'humidity': 65,
+                'pressure': 1013.0,
+                'visibility': 10.0,
+                'weather_description': 'Partly cloudy',
+                'icon_code': '02d',
+                'sunrise': '06:30',
+                'sunset': '18:45'
+            }
     
     # Get water conditions (placeholder for now)
     if data['include_water']:
@@ -107,7 +182,9 @@ def get_rowing_conditions(request):
             'flow_rate': None,
             'tide_height': None,
             'tide_type': None,
-            'water_temperature': None
+            'water_temperature': None,
+            'tide_state': 'Rising',  # Add tide state
+            'next_tide_time': '14:30'  # Add next tide time
         }
     
     # Get forecast (placeholder for now)
