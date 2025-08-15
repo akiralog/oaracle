@@ -45,6 +45,48 @@
             <div class="loading-spinner"></div>
             <p>Fetching weather and water data...</p>
         </div>
+
+        <div id="results-panel" class="results-panel hidden">
+            <div class="results-content">
+                <div class="results-header">
+                    <h3>Rowing Conditions</h3>
+                    <button id="close-results" class="close-btn">×</button>
+                </div>
+                
+                <div class="conditions-grid">
+                    <div class="condition-card wind-card">
+                        <div class="condition-icon">💨</div>
+                        <h4>Wind</h4>
+                        <div class="condition-data">
+                            <p class="wind-speed">-- m/s</p>
+                            <p class="wind-direction">--</p>
+                        </div>
+                    </div>
+                    
+                    <div class="condition-card tide-card">
+                        <div class="condition-icon">🌊</div>
+                        <h4>Tide</h4>
+                        <div class="condition-data">
+                            <p class="tide-state">--</p>
+                            <p class="tide-time">--</p>
+                        </div>
+                    </div>
+                    
+                    <div class="condition-card daylight-card">
+                        <div class="condition-icon">☀️</div>
+                        <h4>Daylight</h4>
+                        <div class="condition-data">
+                            <p class="sunrise">--</p>
+                            <p class="sunset">--</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="location-info">
+                    <p id="results-location">--</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
