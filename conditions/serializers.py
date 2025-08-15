@@ -64,8 +64,8 @@ class LocationDetailSerializer(serializers.ModelSerializer):
 
 class ConditionsRequestSerializer(serializers.Serializer):
     """Serializer for requesting conditions data"""
-    latitude = serializers.DecimalField(max_digits=9, decimal_places=6)
-    longitude = serializers.DecimalField(max_digits=9, decimal_places=6)
+    latitude = serializers.DecimalField(max_digits=12, decimal_places=8)
+    longitude = serializers.DecimalField(max_digits=12, decimal_places=8)
     include_weather = serializers.BooleanField(default=True)
     include_water = serializers.BooleanField(default=True)
     include_forecast = serializers.BooleanField(default=True)
