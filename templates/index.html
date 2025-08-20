@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Oaracle - Rowing Conditions</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     {% load static %}
     <link rel="stylesheet" href="{% static 'styles.css' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,76 +19,76 @@
             </div>
         </header>
 
-        <div id="instructions" class="instructions-overlay">
-            <div class="instructions-content">
-                <div class="pin-icon">📍</div>
-                <h2>Drop a pin where you plan to row</h2>
-                <p>Click anywhere on the map to select your rowing location</p>
-                <button id="dismiss-instructions" class="dismiss-btn">Got it!</button>
-            </div>
-        </div>
-
-        <div id="map" class="map-container"></div>
-
-        <div id="location-panel" class="location-panel hidden">
-            <div class="location-content">
-                <h3>Selected Location</h3>
-                <div id="location-details">
-                    <p id="location-text">Loading location details...</p>
-                </div>
-                <button id="get-conditions" class="primary-btn">Get Rowing Conditions</button>
-            </div>
-        </div>
-
-        <div id="loading" class="loading hidden">
-            <div class="loading-spinner"></div>
-            <p>Fetching weather and water data...</p>
-        </div>
-
-        <div id="results-panel" class="results-panel hidden">
-            <div class="results-content">
-                <div class="results-header">
-                    <h3>Rowing Conditions</h3>
-                    <button id="close-results" class="close-btn">×</button>
-                </div>
+        <main class="main-content">
+            <div class="town-selector-container">
+                <h2>Select a Town</h2>
+                <p class="selector-description">Choose your rowing location from the list below</p>
                 
-                <div class="conditions-grid">
-                    <div class="condition-card wind-card">
-                        <div class="condition-icon">💨</div>
-                        <h4>Wind</h4>
-                        <div class="condition-data">
-                            <p class="wind-speed">-- m/s</p>
-                            <p class="wind-direction">--</p>
+                <div class="town-selector">
+                    <select id="town-select" class="town-dropdown">
+                        <option value="">Select a town...</option>
+                        <option value="chiswick">Chiswick</option>
+                        <option value="putney">Putney</option>
+                        <option value="molesey">Molesey</option>
+                        <option value="kingston">Kingston</option>
+                        <option value="walton-on-thames">Walton-on-Thames</option>
+                    </select>
+                    
+                    <button id="get-conditions" class="primary-btn" disabled>Get Rowing Conditions</button>
+                </div>
+            </div>
+
+            <div id="loading" class="loading hidden">
+                <div class="loading-spinner"></div>
+                <p>Fetching weather and water data...</p>
+            </div>
+
+            <div id="results-panel" class="results-panel hidden">
+                <div class="results-content">
+                    <div class="results-header">
+                        <h3>Rowing Conditions</h3>
+                        <button id="close-results" class="close-btn">×</button>
+                    </div>
+                    
+                    <div class="conditions-grid">
+                        <div class="condition-card wind-card">
+                            <div class="condition-icon">💨</div>
+                            <h4>Wind</h4>
+                            <div class="condition-data">
+                                <p class="wind-speed">-- m/s</p>
+                                <p class="wind-direction">--</p>
+                            </div>
+                        </div>
+                        
+                        <div class="condition-card tide-card">
+                            <div class="condition-icon">🌊</div>
+                            <h4>River Conditions</h4>
+                            <div class="condition-data">
+                                <p class="tide-state">--</p>
+                                <p class="tide-time">--</p>
+                                <p class="tide-source">--</p>
+                                <p class="tide-details">--</p>
+                            </div>
+                        </div>
+                        
+                        <div class="condition-card daylight-card">
+                            <div class="condition-icon">☀️</div>
+                            <h4>Daylight</h4>
+                            <div class="condition-data">
+                                <p class="sunrise">--</p>
+                                <p class="sunset">--</p>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="condition-card tide-card">
-                        <div class="condition-icon">🌊</div>
-                        <h4>Tide</h4>
-                        <div class="condition-data">
-                            <p class="tide-state">--</p>
-                            <p class="tide-time">--</p>
-                        </div>
+                    <div class="location-info">
+                        <p id="results-location">--</p>
                     </div>
-                    
-                    <div class="condition-card daylight-card">
-                        <div class="condition-icon">☀️</div>
-                        <h4>Daylight</h4>
-                        <div class="condition-data">
-                            <p class="sunrise">--</p>
-                            <p class="sunset">--</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="location-info">
-                    <p id="results-location">--</p>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{% static 'app.js' %}"></script>
 </body>
 </html>

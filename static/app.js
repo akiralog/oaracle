@@ -1,52 +1,37 @@
 class OaracleApp {
     constructor() {
-        this.map = null;
-        this.currentMarker = null;
-        this.selectedLocation = null;
+        this.selectedTown = null;
+        this.townCoordinates = {
+            'chiswick': { lat: 51.4875, lng: -0.2675, name: 'Chiswick' },
+            'putney': { lat: 51.4619, lng: -0.2167, name: 'Putney' },
+            'molesey': { lat: 51.3989, lng: -0.3647, name: 'Molesey' },
+            'kingston': { lat: 51.4089, lng: -0.2975, name: 'Kingston' },
+            'walton-on-thames': { lat: 51.3833, lng: -0.4167, name: 'Walton-on-Thames' }
+        };
         this.init();
     }
 
     init() {
-        this.initializeMap();
         this.bindEvents();
-        this.showInstructions();
-    }
-
-    initializeMap() {
-        // Initialize the map centered on the UK
-        this.map = L.map('map', {
-            center: [54.0, -2.0],
-            zoom: 6,
-            zoomControl: true,
-            attributionControl: true
-        });
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 18
-        }).addTo(this.map);
-
-        this.map.on('click', (e) => {
-            this.handleMapClick(e);
-        });
     }
 
     bindEvents() {
-        const dismissBtn = document.getElementById('dismiss-instructions');
-        if (dismissBtn) {
-            dismissBtn.addEventListener('click', () => {
-                this.hideInstructions();
+        const townSelect = document.getElementById('town-select');
+        const getConditionsBtn = document.getElementById('get-conditions');
+        const closeResultsBtn = document.getElementById('close-results');
+
+        if (townSelect) {
+            townSelect.addEventListener('change', (e) => {
+                this.handleTownSelection(e.target.value);
             });
         }
 
-        const getConditionsBtn = document.getElementById('get-conditions');
         if (getConditionsBtn) {
             getConditionsBtn.addEventListener('click', () => {
                 this.getRowingConditions();
             });
         }
 
-        const closeResultsBtn = document.getElementById('close-results');
         if (closeResultsBtn) {
             closeResultsBtn.addEventListener('click', () => {
                 this.hideResultsPanel();
@@ -54,56 +39,17 @@ class OaracleApp {
         }
     }
 
-    showInstructions() {
-        const instructions = document.getElementById('instructions');
-        if (instructions) {
-            instructions.style.display = 'block';
-        }
-    }
-
-    hideInstructions() {
-        const instructions = document.getElementById('instructions');
-        if (instructions) {
-            instructions.style.display = 'none';
-        }
-    }
-
-    handleMapClick(e) {
-        const { lat, lng } = e.latlng;
+    handleTownSelection(townValue) {
+        const getConditionsBtn = document.getElementById('get-conditions');
         
-        // Remove previous marker if exists
-        if (this.currentMarker) {
-            this.map.removeLayer(this.currentMarker);
-        }
-        this.currentMarker = L.marker([lat, lng], {
-            icon: this.createCustomIcon()
-        }).addTo(this.map);
-        this.selectedLocation = { lat, lng };
-        this.showLocationPanel();
-        this.getLocationDetails(lat, lng);
-        this.hideInstructions();
-    }
-
-    createCustomIcon() {
-        return L.divIcon({
-            className: 'custom-marker',
-            html: '📍',
-            iconSize: [32, 32],
-            iconAnchor: [16, 32]
-        });
-    }
-
-    showLocationPanel() {
-        const locationPanel = document.getElementById('location-panel');
-        if (locationPanel) {
-            locationPanel.classList.remove('hidden');
-        }
-    }
-
-    hideLocationPanel() {
-        const locationPanel = document.getElementById('location-panel');
-        if (locationPanel) {
-            locationPanel.classList.add('hidden');
+        if (townValue && this.townCoordinates[townValue]) {
+            this.selectedTown = this.townCoordinates[townValue];
+            getConditionsBtn.disabled = false;
+            getConditionsBtn.textContent = `Get Conditions for ${this.selectedTown.name}`;
+        } else {
+            this.selectedTown = null;
+            getConditionsBtn.disabled = true;
+            getConditionsBtn.textContent = 'Get Rowing Conditions';
         }
     }
 
@@ -121,94 +67,30 @@ class OaracleApp {
         }
     }
 
-    async getLocationDetails(lat, lng) {
-        try {
-            // Using OpenStreetMap Nominatim API for reverse geocoding
-            const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`
-            );
-            
-            if (!response.ok) {
-                throw new Error('Failed to fetch location details');
-            }
-
-            const data = await response.json();
-            this.displayLocationDetails(data);
-        } catch (error) {
-            console.error('Error fetching location details:', error);
-            this.displayLocationDetails({
-                display_name: `Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`
-            });
-        }
-    }
-
-    displayLocationDetails(data) {
-        const locationText = document.getElementById('location-text');
-        if (locationText) {
-            // Extract useful information from the response
-            let displayText = data.display_name || 'Unknown location';
-            
-            // Try to get a more user-friendly description
-            if (data.address) {
-                const address = data.address;
-                let parts = [];
-                
-                if (address.waterway) parts.push(address.waterway);
-                if (address.river) parts.push(address.river);
-                if (address.city) parts.push(address.city);
-                else if (address.town) parts.push(address.town);
-                else if (address.village) parts.push(address.village);
-                
-                if (parts.length > 0) {
-                    displayText = parts.join(', ');
-                }
-            }
-            
-            locationText.textContent = displayText;
-        }
-    }
-
     async getRowingConditions() {
-        if (!this.selectedLocation) {
-            console.error('No location selected');
+        if (!this.selectedTown) {
+            console.error('No town selected');
             return;
         }
 
         this.showLoading();
 
         try {
-            // Round coordinates to 6 decimal places to avoid validation issues
-            const roundedLat = Math.round(this.selectedLocation.lat * 1000000) / 1000000;
-            const roundedLng = Math.round(this.selectedLocation.lng * 1000000) / 1000000;
+            const townKey = Object.keys(this.townCoordinates).find(
+                key => this.townCoordinates[key].name === this.selectedTown.name
+            );
             
-            console.log('Sending request to:', '/api/conditions/');
-            console.log('Request data:', {
-                latitude: roundedLat,
-                longitude: roundedLng,
-                include_weather: true,
-                include_water: true,
-                include_forecast: true,
-                days_ahead: 7
-            });
+            console.log('Sending request to:', `/api/town/${townKey}/`);
             
-            // Call our Django backend API
-            const response = await fetch('/api/conditions/', {
-                method: 'POST',
+            // Call our Django backend API using the town endpoint
+            const response = await fetch(`/api/town/${townKey}/`, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    latitude: roundedLat,
-                    longitude: roundedLng,
-                    include_weather: true,
-                    include_water: true,
-                    include_forecast: true,
-                    days_ahead: 7
-                })
+                }
             });
             
             console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
             
             if (!response.ok) {
                 const errorText = await response.text();
@@ -244,16 +126,14 @@ class OaracleApp {
     }
 
     showConditionsResult(data) {
-        // Hide the location panel and show results
-        this.hideLocationPanel();
         this.showResultsPanel();
         
-        console.log('Received data:', data); // Debug log
+        console.log('Received data:', data);
         
         // Update location info
         const resultsLocation = document.getElementById('results-location');
         if (resultsLocation) {
-            resultsLocation.textContent = data.location?.name || 'Selected location';
+            resultsLocation.textContent = this.selectedTown.name;
         }
         
         // Update wind data
@@ -277,12 +157,57 @@ class OaracleApp {
             if (tideState) {
                 tideState.textContent = data.water_conditions.tide_state;
             }
+        } else {
+            const tideState = document.querySelector('.tide-state');
+            if (tideState) {
+                tideState.textContent = 'Could not fetch Environment Agency data';
+            }
         }
         
         if (data.water_conditions?.next_tide_time !== undefined) {
             const tideTime = document.querySelector('.tide-time');
             if (tideTime) {
                 tideTime.textContent = data.water_conditions.next_tide_time;
+            }
+        } else {
+            const tideTime = document.querySelector('.tide-time');
+            if (tideTime) {
+                tideTime.textContent = 'No flow rate data available';
+            }
+        }
+        
+        if (data.water_conditions?.data_source !== undefined) {
+            const tideSource = document.querySelector('.tide-source');
+            if (tideSource) {
+                tideSource.textContent = data.water_conditions.data_source;
+            }
+        } else {
+            const tideSource = document.querySelector('.tide-source');
+            if (tideSource) {
+                tideSource.textContent = 'Environment Agency data unavailable';
+            }
+        }
+        
+        // Update tide details
+        if (data.water_conditions?.measurement_time || data.water_conditions?.unit || data.water_conditions?.station_name) {
+            const tideDetails = document.querySelector('.tide-details');
+            if (tideDetails) {
+                let details = [];
+                if (data.water_conditions.station_name) {
+                    details.push(`Station: ${data.water_conditions.station_name}`);
+                }
+                if (data.water_conditions.measurement_time) {
+                    details.push(`Updated: ${data.water_conditions.measurement_time}`);
+                }
+                if (data.water_conditions.unit) {
+                    details.push(`Unit: ${data.water_conditions.unit}`);
+                }
+                tideDetails.textContent = details.join(' | ');
+            }
+        } else {
+            const tideDetails = document.querySelector('.tide-details');
+            if (tideDetails) {
+                tideDetails.textContent = 'No station data available';
             }
         }
         
@@ -301,32 +226,11 @@ class OaracleApp {
             }
         }
         
-        // Log the full data for debugging
         console.log('Conditions data:', data);
     }
 
     showError(message) {
         alert(`Error: ${message}`);
-    }
-
-    // Utility method to get current location
-    getCurrentLocation() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const { latitude, longitude } = position.coords;
-                    this.map.setView([latitude, longitude], 12);
-                    
-                    // Simulate a click at current location
-                    this.handleMapClick({
-                        latlng: { lat: latitude, lng: longitude }
-                    });
-                },
-                (error) => {
-                    console.error('Error getting current location:', error);
-                }
-            );
-        }
     }
 }
 
