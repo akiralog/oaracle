@@ -35,14 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     const windData = data.weather.forecasts.wind.days[0].entries;
                     const weatherData = data.weather.forecasts.weather.days[0].entries;
 
-                    let weatherHtml = "<table><tr><th>Time</th><th>Temp (°C)</th><th>Wind (mph)</th><th>Description</th></tr>";
+                    let weatherHtml = "<table><tr><th>Time</th><th>Temp (°C)</th><th>Wind (mph)</th><th>Wind Gust (mph)</th></tr>";
 
                     tempData.forEach((tempEntry, i) => {
                         const time = tempEntry.dateTime.slice(11,16);
                         const temp = tempEntry.temperature;
                         const wind = windData[i] ? windData[i].speed : "N/A";
-                        const desc = weatherData[i] ? weatherData[i].precis : "N/A";
-                        weatherHtml += `<tr><td>${time}</td><td>${temp}</td><td>${wind}</td><td>${desc}</td></tr>`;
+                        const gust = data.gusts ? data.gusts.gustSpeed : "N/A";
+                        weatherHtml += `<tr><td>${time}</td><td>${temp}</td><td>${wind}</td><td>${gust}</td></tr>`;
                     });
 
                     weatherHtml += "</table>";

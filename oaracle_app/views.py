@@ -41,10 +41,16 @@ def fetch_data(request):
     
     weather_data = wm.get_weather_data(location_id, days=1)
     tide_data = None
+    gust_data = None
+
     if is_tidal:
         tide_data = wm.get_tide_data(location_id, days=1)
-        
+    
+    # fetch gusts
+    gust_data = wm.get_observational_data(location_id)
+
     return JsonResponse({
         "weather": weather_data,
-        "tides": tide_data
+        "tides": tide_data,
+        "gusts": gust_data
     })
