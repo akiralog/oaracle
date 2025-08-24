@@ -2,90 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oaracle - Rowing Conditions</title>
-    {% load static %}
+    <title>Oaracler</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
-        <header class="header">
-            <div class="header-content">
-                <h1 class="logo">Oaracle</h1>
-                <p class="tagline">Find the perfect rowing conditions</p>
-            </div>
-        </header>
+    <h1>Oaracle</h1>
 
-        <main class="main-content">
-            <div class="town-selector-container">
-                <h2>Select a Town</h2>
-                <p class="selector-description">Choose your rowing location from the list below</p>
-                
-                <div class="town-selector">
-                    <select id="town-select" class="town-dropdown">
-                        <option value="">Select a town...</option>
-                        {% for town in towns %}
-                        <option value="{{ town.town_name|lower }}">{{ town.town_name }}{% if town.is_tidal %} 🌊{% endif %}</option>
-                        {% endfor %}
-                    </select>
-                    
-                    <button id="get-conditions" class="primary-btn" disabled>Get Rowing Conditions</button>
-                </div>
-            </div>
+    <label for="townSelect">Select a town:</label>
+    <select id="townSelect">
+        <!-- Options will be populated by JS -->
+    </select>
 
-            <div id="loading" class="loading hidden">
-                <div class="loading-spinner"></div>
-                <p>Fetching weather and water data...</p>
-            </div>
+    <button id="fetchBtn">Fetch</button>
 
-            <div id="results-panel" class="results-panel hidden">
-                <div class="results-content">
-                    <div class="results-header">
-                        <h3>Rowing Conditions</h3>
-                        <button id="close-results" class="close-btn">×</button>
-                    </div>
-                    
-                    <div class="conditions-grid">
-                        <div class="condition-card wind-card">
-                            <div class="condition-icon">💨</div>
-                            <h4>Wind</h4>
-                            <div class="condition-data">
-                                <p class="wind-speed">-- m/s</p>
-                                <p class="wind-direction">--</p>
-                            </div>
-                        </div>
-                        
-                        <div class="condition-card tide-card">
-                            <div class="condition-icon">🌊</div>
-                            <h4>River Conditions</h4>
-                            <div class="condition-data">
-                                <p class="tide-state">--</p>
-                                <p class="tide-time">--</p>
-                                <p class="tide-source">--</p>
-                                <p class="tide-details">--</p>
-                            </div>
-                        </div>
-                        
-                        <div class="condition-card daylight-card">
-                            <div class="condition-icon">☀️</div>
-                            <h4>Daylight</h4>
-                            <div class="condition-data">
-                                <p class="sunrise">--</p>
-                                <p class="sunset">--</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="location-info">
-                        <p id="results-location">--</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+    <div id="output"></div>
 
     <script src="{% static 'app.js' %}"></script>
 </body>
