@@ -5,18 +5,26 @@
     <meta charset="UTF-8">
     <title>Oaracle</title>
     <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { color: #2c3e50; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
 </head>
 <body>
     <h1>Oaracle</h1>
 
     <label for="townSelect">Select a town:</label>
-    <select id="townSelect">
-        <!-- Options will be populated by JS -->
-    </select>
-
+    <select id="townSelect"></select>
     <button id="fetchBtn">Fetch</button>
 
-    <div id="output"></div> 
+    <h2>Weather</h2>
+    <div id="weatherOutput">No data yet</div>
+
+    <h2>Tides</h2>
+    <div id="tideOutput">No data yet</div>
 
     <script src="{% static 'app.js' %}"></script>
 </body>
