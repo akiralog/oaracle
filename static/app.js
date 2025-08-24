@@ -9,16 +9,23 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(data => {
             data.towns.forEach(town => {
                 const option = document.createElement('option');
-                option.value = town;
-                option.textContent = town;
+                option.value = town.location_id;        // store location_id
+                option.textContent = town.name;         // display town name
+                option.dataset.isTidal = town.is_tidal; // store is_tidal 
                 select.appendChild(option);
             });
         })
         .catch(error => console.error("Error fetching towns:", error));
 
     fetchBtn.addEventListener('click', () => {
-        const selectedTown = select.value;
-        output.textContent = `Fetching data for ${selectedTown}...`;
-        // Later: fetch from WillyWeather API
+        const selectedOption = select.options[select.selectedIndex];
+        const selectedTownName = selectedOption.textContent;
+        const selectedLocationId = selectedOption.value;
+        const isTidal = selectedOption.dataset.isTidal === "true";
+
+        output.textContent = `Fetching data for ${selectedTownName} (ID: ${selectedLocationId})...`;
+        console.log(`Is tidal? ${isTidal}`);
+
+        // Later: fetch weather/tide data from Django backend or WillyWeather API
     });
 });
