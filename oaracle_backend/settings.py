@@ -151,3 +151,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # OpenWeatherMap API Configuration
 OPENWEATHERMAP_API_KEY = os.getenv('OPENWEATHERMAP_API_KEY')  # Replace with your actual API key
 OPENWEATHERMAP_BASE_URL = 'https://api.openweathermap.org/data/2.5'
+
+# WillyWeather API Configuration
+WILLY_WEATHER_API_KEY = os.getenv('WILLY_WEATHER_API_KEY')  # Add your WillyWeather API key to .env file

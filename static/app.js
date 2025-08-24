@@ -1,239 +1,198 @@
-class OaracleApp {
-    constructor() {
-        this.selectedTown = null;
-        this.townCoordinates = {
-            'chiswick': { lat: 51.4875, lng: -0.2675, name: 'Chiswick' },
-            'putney': { lat: 51.4619, lng: -0.2167, name: 'Putney' },
-            'molesey': { lat: 51.3989, lng: -0.3647, name: 'Molesey' },
-            'kingston': { lat: 51.4089, lng: -0.2975, name: 'Kingston' },
-            'walton-on-thames': { lat: 51.3833, lng: -0.4167, name: 'Walton-on-Thames' }
-        };
-        this.init();
-    }
+// Oaracle - Rowing Conditions App
+document.addEventListener('DOMContentLoaded', function() {
+    const townSelect = document.getElementById('town-select');
+    const getConditionsBtn = document.getElementById('get-conditions');
+    const loading = document.getElementById('loading');
+    const resultsPanel = document.getElementById('results-panel');
+    const closeResultsBtn = document.getElementById('close-results');
 
-    init() {
-        this.bindEvents();
-    }
+    // Enable/disable button based on selection
+    townSelect.addEventListener('change', function() {
+        getConditionsBtn.disabled = !this.value;
+    });
 
-    bindEvents() {
-        const townSelect = document.getElementById('town-select');
-        const getConditionsBtn = document.getElementById('get-conditions');
-        const closeResultsBtn = document.getElementById('close-results');
-
-        if (townSelect) {
-            townSelect.addEventListener('change', (e) => {
-                this.handleTownSelection(e.target.value);
-            });
+    // Get conditions button click
+    getConditionsBtn.addEventListener('click', function() {
+        const selectedTown = townSelect.value;
+        if (selectedTown) {
+            getRowingConditions(selectedTown);
         }
+    });
 
-        if (getConditionsBtn) {
-            getConditionsBtn.addEventListener('click', () => {
-                this.getRowingConditions();
-            });
-        }
+    // Close results panel
+    closeResultsBtn.addEventListener('click', function() {
+        resultsPanel.classList.add('hidden');
+    });
 
-        if (closeResultsBtn) {
-            closeResultsBtn.addEventListener('click', () => {
-                this.hideResultsPanel();
-            });
-        }
-    }
-
-    handleTownSelection(townValue) {
-        const getConditionsBtn = document.getElementById('get-conditions');
-        
-        if (townValue && this.townCoordinates[townValue]) {
-            this.selectedTown = this.townCoordinates[townValue];
-            getConditionsBtn.disabled = false;
-            getConditionsBtn.textContent = `Get Conditions for ${this.selectedTown.name}`;
-        } else {
-            this.selectedTown = null;
-            getConditionsBtn.disabled = true;
-            getConditionsBtn.textContent = 'Get Rowing Conditions';
-        }
-    }
-
-    showResultsPanel() {
-        const resultsPanel = document.getElementById('results-panel');
-        if (resultsPanel) {
-            resultsPanel.classList.remove('hidden');
-        }
-    }
-
-    hideResultsPanel() {
-        const resultsPanel = document.getElementById('results-panel');
-        if (resultsPanel) {
-            resultsPanel.classList.add('hidden');
-        }
-    }
-
-    async getRowingConditions() {
-        if (!this.selectedTown) {
-            console.error('No town selected');
-            return;
-        }
-
-        this.showLoading();
+    async function getRowingConditions(townName) {
+        // Show loading
+        loading.classList.remove('hidden');
+        resultsPanel.classList.add('hidden');
 
         try {
-            const townKey = Object.keys(this.townCoordinates).find(
-                key => this.townCoordinates[key].name === this.selectedTown.name
-            );
-            
-            console.log('Sending request to:', `/api/town/${townKey}/`);
-            
-            // Call our Django backend API using the town endpoint
-            const response = await fetch(`/api/town/${townKey}/`, {
-                method: 'GET',
+            // Call the weather API
+            const response = await fetch('/api/weather/', {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                body: JSON.stringify({
+                    town_name: townName,
+                    days: 1
+                })
             });
-            
-            console.log('Response status:', response.status);
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Response error text:', errorText);
-                throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
-            }
-            
+
             const data = await response.json();
-            console.log('Response data:', data);
-            
-            this.hideLoading();
-            this.showConditionsResult(data);
-            
+
+            if (response.ok) {
+                displayRowingConditions(data, townName);
+            } else {
+                console.error('Error fetching weather data:', data.error);
+                showError('Failed to fetch weather data. Please try again.');
+            }
         } catch (error) {
-            console.error('Error fetching conditions:', error);
-            this.hideLoading();
-            this.showError(`Failed to fetch rowing conditions: ${error.message}`);
-        }
-    }
-
-    showLoading() {
-        const loading = document.getElementById('loading');
-        if (loading) {
-            loading.classList.remove('hidden');
-        }
-    }
-
-    hideLoading() {
-        const loading = document.getElementById('loading');
-        if (loading) {
+            console.error('Network error:', error);
+            showError('Network error. Please check your connection and try again.');
+        } finally {
             loading.classList.add('hidden');
         }
     }
 
-    showConditionsResult(data) {
-        this.showResultsPanel();
-        
-        console.log('Received data:', data);
-        
+    function displayRowingConditions(data, townName) {
         // Update location info
-        const resultsLocation = document.getElementById('results-location');
-        if (resultsLocation) {
-            resultsLocation.textContent = this.selectedTown.name;
+        document.getElementById('results-location').textContent = `${townName} - WillyWeather ID: ${data.town.location_id}`;
+
+        // Parse and display weather data
+        if (data.weather_data) {
+            displayWindConditions(data.weather_data);
+            displayDaylightConditions(data.weather_data);
         }
-        
-        // Update wind data
-        if (data.current_conditions?.wind_speed !== undefined) {
-            const windSpeed = document.querySelector('.wind-speed');
-            if (windSpeed) {
-                windSpeed.textContent = `${data.current_conditions.wind_speed} m/s`;
-            }
-        }
-        
-        if (data.current_conditions?.wind_direction !== undefined) {
-            const windDirection = document.querySelector('.wind-direction');
-            if (windDirection) {
-                windDirection.textContent = data.current_conditions.wind_direction;
-            }
-        }
-        
-        // Update tide data
-        if (data.water_conditions?.tide_state !== undefined) {
-            const tideState = document.querySelector('.tide-state');
-            if (tideState) {
-                tideState.textContent = data.water_conditions.tide_state;
-            }
+
+        // Parse and display tide data if available
+        if (data.tide_data && data.town.is_tidal) {
+            displayTideConditions(data.tide_data);
         } else {
-            const tideState = document.querySelector('.tide-state');
-            if (tideState) {
-                tideState.textContent = 'Could not fetch Environment Agency data';
+            // Hide tide card if no tide data
+            const tideCard = document.querySelector('.tide-card');
+            if (tideCard) {
+                tideCard.style.display = 'none';
             }
         }
-        
-        if (data.water_conditions?.next_tide_time !== undefined) {
-            const tideTime = document.querySelector('.tide-time');
-            if (tideTime) {
-                tideTime.textContent = data.water_conditions.next_tide_time;
-            }
-        } else {
-            const tideTime = document.querySelector('.tide-time');
-            if (tideTime) {
-                tideTime.textContent = 'No flow rate data available';
-            }
-        }
-        
-        if (data.water_conditions?.data_source !== undefined) {
-            const tideSource = document.querySelector('.tide-source');
-            if (tideSource) {
-                tideSource.textContent = data.water_conditions.data_source;
-            }
-        } else {
-            const tideSource = document.querySelector('.tide-source');
-            if (tideSource) {
-                tideSource.textContent = 'Environment Agency data unavailable';
-            }
-        }
-        
-        // Update tide details
-        if (data.water_conditions?.measurement_time || data.water_conditions?.unit || data.water_conditions?.station_name) {
-            const tideDetails = document.querySelector('.tide-details');
-            if (tideDetails) {
-                let details = [];
-                if (data.water_conditions.station_name) {
-                    details.push(`Station: ${data.water_conditions.station_name}`);
-                }
-                if (data.water_conditions.measurement_time) {
-                    details.push(`Updated: ${data.water_conditions.measurement_time}`);
-                }
-                if (data.water_conditions.unit) {
-                    details.push(`Unit: ${data.water_conditions.unit}`);
-                }
-                tideDetails.textContent = details.join(' | ');
-            }
-        } else {
-            const tideDetails = document.querySelector('.tide-details');
-            if (tideDetails) {
-                tideDetails.textContent = 'No station data available';
-            }
-        }
-        
-        // Update daylight data
-        if (data.current_conditions?.sunrise !== undefined) {
-            const sunrise = document.querySelector('.sunrise');
-            if (sunrise) {
-                sunrise.textContent = `Sunrise: ${data.current_conditions.sunrise}`;
-            }
-        }
-        
-        if (data.current_conditions?.sunset !== undefined) {
-            const sunset = document.querySelector('.sunset');
-            if (sunset) {
-                sunset.textContent = `Sunset: ${data.current_conditions.sunset}`;
-            }
-        }
-        
-        console.log('Conditions data:', data);
+
+        // Show results
+        resultsPanel.classList.remove('hidden');
     }
 
-    showError(message) {
-        alert(`Error: ${message}`);
-    }
-}
+    function displayWindConditions(weatherData) {
+        const windCard = document.querySelector('.wind-card .condition-data');
+        const forecasts = weatherData.forecasts || {};
+        const windData = forecasts.wind;
 
-document.addEventListener('DOMContentLoaded', () => {
-    new OaracleApp();
+        if (windData && windData.days && windData.days[0] && windData.days[0].entries) {
+            const windEntry = windData.days[0].entries[0];
+            const speed = windEntry.speed || 'N/A';
+            const direction = windEntry.directionText || 'N/A';
+            const gustSpeed = windEntry.gustSpeed;
+
+            windCard.innerHTML = `
+                <p class="wind-speed"><strong>${speed} mph</strong></p>
+                <p class="wind-direction">${direction}</p>
+                ${gustSpeed ? `<p class="wind-gusts">Gusts: ${gustSpeed} mph</p>` : ''}
+            `;
+        } else {
+            windCard.innerHTML = '<p>Wind data unavailable</p>';
+        }
+    }
+
+    function displayTideConditions(tideData) {
+        const tideCard = document.querySelector('.tide-card .condition-data');
+        const forecasts = tideData.forecasts || {};
+        const tidesData = forecasts.tides;
+
+        if (tidesData && tidesData.days && tidesData.days[0] && tidesData.days[0].entries) {
+            const todayTides = tidesData.days[0].entries;
+            let tideInfo = '';
+
+            // Show next few tides
+            todayTides.slice(0, 3).forEach(tide => {
+                const time = new Date(tide.dateTime).toLocaleTimeString('en-GB', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                const type = tide.type === 'high' ? 'High' : 'Low';
+                const height = tide.height || 'N/A';
+                tideInfo += `<p><strong>${time} - ${type}</strong>: ${height}m</p>`;
+            });
+
+            tideCard.innerHTML = tideInfo;
+        } else {
+            tideCard.innerHTML = '<p>Tide data unavailable</p>';
+        }
+
+        // Show the tide card
+        const tideCardElement = document.querySelector('.tide-card');
+        if (tideCardElement) {
+            tideCardElement.style.display = 'block';
+        }
+    }
+
+    function displayDaylightConditions(weatherData) {
+        const daylightCard = document.querySelector('.daylight-card .condition-data');
+        const forecasts = weatherData.forecasts || {};
+        const sunData = forecasts.sun;
+
+        if (sunData && sunData.days && sunData.days[0] && sunData.days[0].entries) {
+            const sunEntries = sunData.days[0].entries;
+            let sunrise = 'N/A';
+            let sunset = 'N/A';
+
+            sunEntries.forEach(entry => {
+                if (entry.type === 'sunrise') {
+                    sunrise = new Date(entry.dateTime).toLocaleTimeString('en-GB', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                } else if (entry.type === 'sunset') {
+                    sunset = new Date(entry.dateTime).toLocaleTimeString('en-GB', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                    });
+                }
+            });
+
+            daylightCard.innerHTML = `
+                <p class="sunrise"><strong>Sunrise:</strong> ${sunrise}</p>
+                <p class="sunset"><strong>Sunset:</strong> ${sunset}</p>
+            `;
+        } else {
+            daylightCard.innerHTML = '<p>Daylight data unavailable</p>';
+        }
+    }
+
+    function showError(message) {
+        // Create a simple error display
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            z-index: 1000;
+            max-width: 300px;
+        `;
+        errorDiv.textContent = message;
+        
+        document.body.appendChild(errorDiv);
+        
+        // Remove after 5 seconds
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.parentNode.removeChild(errorDiv);
+            }
+        }, 5000);
+    }
 });

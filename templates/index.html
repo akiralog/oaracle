@@ -27,11 +27,9 @@
                 <div class="town-selector">
                     <select id="town-select" class="town-dropdown">
                         <option value="">Select a town...</option>
-                        <option value="chiswick">Chiswick</option>
-                        <option value="putney">Putney</option>
-                        <option value="molesey">Molesey</option>
-                        <option value="kingston">Kingston</option>
-                        <option value="walton-on-thames">Walton-on-Thames</option>
+                        {% for town in towns %}
+                        <option value="{{ town.town_name|lower }}">{{ town.town_name }}{% if town.is_tidal %} 🌊{% endif %}</option>
+                        {% endfor %}
                     </select>
                     
                     <button id="get-conditions" class="primary-btn" disabled>Get Rowing Conditions</button>
