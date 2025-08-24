@@ -21,5 +21,6 @@ from oaracle_app import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
-    path('api/towns/', views.get_towns, name='get_towns') #api endpoint
+    path('api/towns/', views.get_towns, name='get_towns'),
+    path('api/fetch_data/', views.fetch_data, name='fetch_data'),
 ] 
