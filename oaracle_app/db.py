@@ -40,7 +40,7 @@ class DatabaseManager:
         return self.cursor.fetchone()
     
     def get_location_by_name(self, town_name: str):
-        self.cursor.execute("SELECT * FROM locations WHERE location_id = ?", (town_name,))
+        self.cursor.execute("SELECT * FROM locations WHERE town_name = ?", (town_name,))
         return self.cursor.fetchone()
 
     def close(self):

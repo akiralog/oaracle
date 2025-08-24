@@ -2,7 +2,6 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import sqlite3
 from pathlib import Path
-from .db import DatabaseManager
 from .weather import WeatherManager
 import os
 
@@ -21,7 +20,13 @@ def get_towns(req):
     cursor.execute('''
                    SELECT town_name, location_id, is_tidal FROM locations
                    ''')
-    towns = [{"name": row[0], "location_id": row[1], "is_tidal": row[2]} for row in cursor.fetchall()]
+    towns = [
+        {
+            "name": row[0], 
+            "location_id": row[1], 
+            "is_tidal": bool(row[2])
+            } 
+        for row in cursor.fetchall()]
     conn.close()
     return JsonResponse({"towns": towns})
     

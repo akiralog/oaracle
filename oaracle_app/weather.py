@@ -69,7 +69,7 @@ class WeatherManager:
         forecasts = weather_data.get('forecasts', {})
         
         print("\n" + "="*80)
-        print(f"WEATHER FORECAST")
+        print("WEATHER FORECAST")
         print("="*80)
         print(f"Location: {location.get('name', 'Unknown')}")
         print(f"Region: {location.get('region', 'Unknown')}, {location.get('state', 'Unknown')}")

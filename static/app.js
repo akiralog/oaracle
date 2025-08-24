@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const option = document.createElement('option');
                 option.value = town.location_id;        // store location_id
                 option.textContent = town.name;         // display town name
-                option.dataset.isTidal = town.is_tidal; // store is_tidal 
+                option.dataset.isTidal = town.is_tidal; // store is_tidal as boolean
                 select.appendChild(option);
             });
         })
@@ -21,11 +21,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const selectedOption = select.options[select.selectedIndex];
         const selectedTownName = selectedOption.textContent;
         const selectedLocationId = selectedOption.value;
-        const isTidal = selectedOption.dataset.isTidal === "true";
+        const isTidal = selectedOption.dataset.isTidal === "true"; 
 
         output.textContent = `Fetching data for ${selectedTownName} (ID: ${selectedLocationId})...`;
         console.log(`Is tidal? ${isTidal}`);
 
-        // Later: fetch weather/tide data from Django backend or WillyWeather API
+        // Fetch weather/tide data from backend
+        fetch(`/api/fetch_data/?location_id=${selectedLocationId}&is_tidal=${isTidal}`)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Weather Data:", data.weather);
+                console.log("Tide Data:", data.tides);
+            })
+            .catch(error => console.error("Error fetching data:", error));
     });
 });
