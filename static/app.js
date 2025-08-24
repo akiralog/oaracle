@@ -3,19 +3,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const output = document.getElementById('output');
     const fetchBtn = document.getElementById('fetchBtn');
 
-    // Temporary town list (will be replaced by backend API later)
-    const towns = ["Chiswick", "Putney", "Hammersmith", "Richmond"];
-
-    towns.forEach(town => {
-        const option = document.createElement('option');
-        option.value = town;
-        option.textContent = town;
-        select.appendChild(option);
-    });
+    // Fetch towns from backend
+    fetch('/api/towns/')
+        .then(response => response.json())
+        .then(data => {
+            data.towns.forEach(town => {
+                const option = document.createElement('option');
+                option.value = town;
+                option.textContent = town;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error("Error fetching towns:", error));
 
     fetchBtn.addEventListener('click', () => {
         const selectedTown = select.value;
         output.textContent = `Fetching data for ${selectedTown}...`;
-        // Later: fetch from Django backend API
+        // Later: fetch from WillyWeather API
     });
 });
