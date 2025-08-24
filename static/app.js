@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const weatherOutput = document.getElementById('weatherOutput');
     const tideOutput = document.getElementById('tideOutput');
 
+    // fetch towns from backend
     fetch('/api/towns/')
         .then(response => response.json())
         .then(data => {
@@ -28,15 +29,21 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(`/api/fetch_data/?location_id=${locationId}&is_tidal=${isTidal}`)
             .then(response => response.json())
             .then(data => {
-                if (data.weather && data.weather.forecasts) {
-                    const forecast = data.weather.forecasts;
-                    let weatherHtml = "<table><tr><th>Type</th><th>Value</th></tr>";
+                // weather
+                if (data.weather && data.weather.forecasts && data.weather.forecasts.temperature) {
+                    const tempData = data.weather.forecasts.temperature.days[0].entries;
+                    const windData = data.weather.forecasts.wind.days[0].entries;
+                    const weatherData = data.weather.forecasts.weather.days[0].entries;
 
-                    for (const key in forecast) {
-                        if (forecast.hasOwnProperty(key)) {
-                            weatherHtml += `<tr><td>${key}</td><td>${JSON.stringify(forecast[key])}</td></tr>`;
-                        }
-                    }
+                    let weatherHtml = "<table><tr><th>Time</th><th>Temp (°C)</th><th>Wind (mph)</th><th>Description</th></tr>";
+
+                    tempData.forEach((tempEntry, i) => {
+                        const time = tempEntry.dateTime.slice(11,16);
+                        const temp = tempEntry.temperature;
+                        const wind = windData[i] ? windData[i].speed : "N/A";
+                        const desc = weatherData[i] ? weatherData[i].precis : "N/A";
+                        weatherHtml += `<tr><td>${time}</td><td>${temp}</td><td>${wind}</td><td>${desc}</td></tr>`;
+                    });
 
                     weatherHtml += "</table>";
                     weatherOutput.innerHTML = weatherHtml;
@@ -44,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     weatherOutput.textContent = "No weather data available";
                 }
 
+                // tides
                 if (isTidal && data.tides && data.tides.forecasts && data.tides.forecasts.tides) {
                     const days = data.tides.forecasts.tides.days;
                     let tideHtml = "<table><tr><th>DateTime</th><th>Height</th><th>Type</th></tr>";
