@@ -29,19 +29,29 @@ def get_towns(req):
         for row in cursor.fetchall()]
     conn.close()
     return JsonResponse({"towns": towns})
-    
+
 def fetch_data(request):
     location_id = int(request.GET.get("location_id"))
     is_tidal = request.GET.get("is_tidal") == "true"
 
     wm = WeatherManager(API_KEY)
+    
+    # fetch weather & tide
     weather_data = wm.get_weather_data(location_id, days=1)
     tide_data = wm.get_tide_data(location_id, days=1) if is_tidal else None
-    obs_data = wm.get_observational_data(location_id)  # get current gust
+    
+    # fetch current gust
+    obs_data = wm.get_observational_data(location_id)
+    current_gust = obs_data.get("gustSpeed") if obs_data else None
+    
+    # compute current wind
+    current_wind = wm.get_current_wind(weather_data) if weather_data else None
 
     return JsonResponse({
         "weather": weather_data,
         "tides": tide_data,
-        "currentGust": obs_data.get("gustSpeed") if obs_data else None
+        "currentGust": current_gust,
+        "currentWind": current_wind
     })
+
 

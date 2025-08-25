@@ -57,7 +57,7 @@ class WeatherManager:
         except requests.exceptions.RequestException as e:
             print(f"Error fetching tide data: {e}")
             return None
-        
+
     def get_observational_data(self, location_id: int) -> Optional[Dict[str, Any]]:
         endpoint = f"https://api.willyweather.co.uk/v2/{self.api_key}/locations/{location_id}/weather.json"
         payload = {"observational": True, "days": 1}
@@ -81,3 +81,13 @@ class WeatherManager:
         except requests.exceptions.RequestException as e:
             print(f"Error fetching observational data: {e}")
             return None
+
+    def get_current_wind(self, weather_data: Dict[str, Any]) -> Optional[float]:
+        """Get the current wind speed from the first wind forecast entry"""
+        try:
+            wind_days = weather_data.get("forecasts", {}).get("wind", {}).get("days", [])
+            if wind_days and wind_days[0].get("entries"):
+                return wind_days[0]["entries"][0].get("speed")
+        except Exception:
+            return None
+        return None
