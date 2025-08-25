@@ -4,25 +4,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const weatherOutput = document.getElementById('weatherOutput');
     const tideOutput = document.getElementById('tideOutput');
 
-    const directionArrows = {
-        N: "↑",
-        NNE: "↗",
-        NE: "↗",
-        ENE: "↗",
-        E: "→",
-        ESE: "↘",
-        SE: "↘",
-        SSE: "↘",
-        S: "↓",
-        SSW: "↙",
-        SW: "↙",
-        WSW: "↙",
-        W: "←",
-        WNW: "↖",
-        NW: "↖",
-        NNW: "↖"
-    };
-
     // fetch towns from backend
     fetch('/api/towns/')
         .then(response => response.json())
@@ -53,17 +34,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     const tempData = data.weather.forecasts.temperature.days[0].entries;
                     const windData = data.weather.forecasts.wind.days[0].entries;
 
-                    // display current gust separately
-                    let weatherHtml = `<p>Current gust: ${data.currentGust ?? "N/A"} mph</p>`;
+                    // display current wind & gust
+                    let weatherHtml = `<p>Current wind: ${data.currentWind ?? "N/A"} mph</p>`;
+                    weatherHtml += `<p>Current gust: ${data.currentGust ?? "N/A"} mph</p>`;
                     weatherHtml += "<table><tr><th>Time</th><th>Temp (°C)</th><th>Wind (mph)</th><th>Direction</th></tr>";
 
                     tempData.forEach((tempEntry, i) => {
                         const time = tempEntry.dateTime.slice(11,16);
                         const temp = tempEntry.temperature;
                         const wind = windData[i] ? windData[i].speed : "N/A";
-                        const directionText = windData[i] ? windData[i].directionText : "N/A";
-                        const directionArrow = directionArrows[directionText] ?? "";
-                        weatherHtml += `<tr><td>${time}</td><td>${temp}</td><td>${wind}</td><td>${directionArrow} ${directionText}</td></tr>`;
+                        const direction = windData[i] ? windData[i].directionText : "N/A";
+                        weatherHtml += `<tr><td>${time}</td><td>${temp}</td><td>${wind}</td><td>${direction}</td></tr>`;
                     });
 
                     weatherHtml += "</table>";
@@ -75,11 +56,40 @@ document.addEventListener("DOMContentLoaded", () => {
                 // tides
                 if (isTidal && data.tides && data.tides.forecasts && data.tides.forecasts.tides) {
                     const days = data.tides.forecasts.tides.days;
-                    let tideHtml = "<table><tr><th>DateTime</th><th>Height (m)</th><th>Type</th></tr>";
+                    
+                    // find next tide
+                    let nextTide = null;
+                    const now = new Date();
+                    outer: for (const day of days) {
+                        for (const entry of day.entries) {
+                            const tideTime = new Date(entry.dateTime);
+                            if (tideTime > now) {
+                                nextTide = entry;
+                                break outer;
+                            }
+                        }
+                    }
+
+                    let tideHtml = "";
+                    if (nextTide) {
+                        const tideDate = new Date(nextTide.dateTime);
+                        const hours = tideDate.getHours() % 12 || 12;
+                        const minutes = tideDate.getMinutes().toString().padStart(2, '0');
+                        const ampm = tideDate.getHours() >= 12 ? "PM" : "AM";
+                        tideHtml += `<p>Next tide: ${nextTide.type} at ${hours}:${minutes} ${ampm}</p>`;
+                    }
+
+                    tideHtml += "<table><tr><th>Time</th><th>Height (m)</th><th>Type</th></tr>";
 
                     days.forEach(day => {
                         day.entries.forEach(entry => {
-                            tideHtml += `<tr><td>${entry.dateTime}</td><td>${entry.height} m</td><td>${entry.type}</td></tr>`;
+                            const tideDate = new Date(entry.dateTime);
+                            const hours = tideDate.getHours() % 12 || 12;
+                            const minutes = tideDate.getMinutes().toString().padStart(2, '0');
+                            const ampm = tideDate.getHours() >= 12 ? "PM" : "AM";
+                            const timeStr = `${hours}:${minutes} ${ampm}`;
+
+                            tideHtml += `<tr><td>${timeStr}</td><td>${entry.height} m</td><td>${entry.type}</td></tr>`;
                         });
                     });
 
