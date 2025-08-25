@@ -31,26 +31,17 @@ def get_towns(req):
     return JsonResponse({"towns": towns})
     
 def fetch_data(request):
-    location_id = request.GET.get("location_id")
+    location_id = int(request.GET.get("location_id"))
     is_tidal = request.GET.get("is_tidal") == "true"
-    
-    if not location_id:
-        return JsonResponse({"error": "Missing location_id"}, status=400)
-    
-    location_id = int(location_id)
-    
-    weather_data = wm.get_weather_data(location_id, days=1)
-    tide_data = None
-    gust_data = None
 
-    if is_tidal:
-        tide_data = wm.get_tide_data(location_id, days=1)
-    
-    # fetch gusts
-    gust_data = wm.get_observational_data(location_id)
+    wm = WeatherManager(API_KEY)
+    weather_data = wm.get_weather_data(location_id, days=1)
+    tide_data = wm.get_tide_data(location_id, days=1) if is_tidal else None
+    obs_data = wm.get_observational_data(location_id)  # get current gust
 
     return JsonResponse({
         "weather": weather_data,
         "tides": tide_data,
-        "gusts": gust_data
+        "currentGust": obs_data.get("gustSpeed") if obs_data else None
     })
+
